@@ -1,0 +1,205 @@
+.xdsoft_range2dslider,.xdsoft_range2dslider *{
+	-moz-box-sizing: border-box; 
+	-webkit-box-sizing: border-box;
+	box-sizing:border-box;
+}
+.xdsoft_noselect{
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+-o-user-select: none;
+user-select: none;
+}
+.xdsoft_range2dslider{
+	position:relative;
+}
+
+.xdsoft_range2dslider_box{
+	border:1px solid #ccc;
+	height:100px;
+	width:auto;
+	position:relative;
+	cursor:pointer;
+}
+
+
+.xdsoft_vertical .xdsoft_range2dslider_box{
+	border-width:0px;
+	background:rgba(0,0,0,0.5);
+}
+
+.xdsoft_range2dslider_slider{
+	border:1px solid #ccc;
+	background:rgba(255,255,255,0.5);
+	border-radius:50%;
+	width:16px;
+	height:16px;
+	position:absolute;
+	cursor:pointer;
+	z-index:5;
+}
+
+.xdsoft_range2dslider_box.xdsoft_range2dslider_box_top .xdsoft_range2dslider_slider{
+	margin-top:-8px;
+}
+.xdsoft_range2dslider_box.xdsoft_range2dslider_box_left .xdsoft_range2dslider_slider{
+	margin-left:-8px;
+}
+.xdsoft_range2dslider_box.xdsoft_range2dslider_box_bottom .xdsoft_range2dslider_slider{
+	margin-bottom:-8px;
+}
+.xdsoft_range2dslider_box.xdsoft_range2dslider_box_right .xdsoft_range2dslider_slider{
+	margin-right:-8px;
+}
+
+.xdsoft_legend{
+	position:absolute;
+	display:block;
+	text-align:center;
+	font-weight:700;
+	font-family:Tahoma;
+	vertical-align:middle;
+	font-size:12px;
+	z-index:3;
+}
+
+.xdsoft_range2dslider_box.xdsoft_grid{
+  background: 
+    linear-gradient(
+    rgba(0,0,0,0.3), transparent 1px
+    ),
+    linear-gradient(
+    90deg,
+    rgba(0,0,0,0.3), transparent 1px
+    );
+  background-size: 10px 10px;
+  background-position: 0 0;
+}
+
+
+span.xdsoft_slider_label{
+  position: absolute;
+  width:50px;
+  color: #fff;
+  background: #000;
+  text-align: center;
+  visibility: hidden;
+  border-radius: 6px;
+  font-size:11px;
+  padding:3px;
+  opacity: 0.8;
+  z-index: 999;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_visible{
+	visibility:visible;
+}
+
+.xdsoft_range2dslider_slider:hover span.xdsoft_slider_label.xdsoft_slider_label_hidden{
+	visibility:visible;
+}
+
+span.xdsoft_slider_label:after {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border:8px solid transparent;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_top:after{
+	top: 100%;
+	left: 50%;
+	margin-left: -8px;
+	width: 0; height: 0;
+	border-top-color:#000;
+	border-bottom-width: 0px;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_top{
+	bottom: 15px;
+	left: 50%;
+	margin-left: -25px;
+}
+
+span.xdsoft_slider_label.xdsoft_slider_label_bottom:after{
+	bottom: 100%;
+	left: 50%;
+	margin-left: -8px;
+	border-bottom-color:#000;
+	border-top-width: 0px;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_bottom{
+	top: 15px;
+	left: 50%;
+	margin-left: -25px;
+}
+
+span.xdsoft_slider_label.xdsoft_slider_label_left:after{
+	top: 50%;
+	left: 100%;
+	margin-top: -8px;
+	border-left-color:#000;
+	border-right-width: 0px;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_left{
+	right: 100%;
+	top: 50%;
+	margin-top: -10px;
+	margin-right: 5px;
+}
+
+span.xdsoft_slider_label.xdsoft_slider_label_right:after{
+	top: 50%;
+	right: 100%;
+	margin-top: -8px;
+	border-right-color:#000;
+	border-left-width: 0px;
+}
+span.xdsoft_slider_label.xdsoft_slider_label_right{
+	left: 100%;
+	top: 50%;
+	margin-top: -10px;
+	margin-left: 5px;
+}
+
+
+.xdsoft_horizontal .xdsoft_range2dslider_slider{
+	border-radius:4px;
+	margin:0px 0px -5px -8px !important;
+	background:rgba(127,127,127,0.5);
+	border:1px outset #ddd;
+}
+.xdsoft_horizontal .xdsoft_range2dslider_box{
+	min-height:8px;
+	background:#fff;
+	border-radius:3px;
+	border-style:solid;
+}
+.xdsoft_horizontal .xdsoft_slider_label{
+	background: #000;
+	color: #fff;
+	bottom: 22px !important;
+}
+.xdsoft_horizontal .xdsoft_slider_label.xdsoft_slider_label_top:after{
+	border-top-color:#000;
+}
+
+.xdsoft_horizontal .xdsoft_range2dslider_slider{
+	border-radius:4px;
+	margin:0px 0px -5px -8px !important;
+	background:rgba(127,127,127,0.5);
+	border:1px outset #ddd;
+}
+.xdsoft_horizontal .xdsoft_range2dslider_box{
+	min-height:8px;
+	background:#fff;
+	border-radius:3px;
+	border-style:solid;
+}
+.xdsoft_horizontal .xdsoft_slider_label{
+	background: #000;
+	color: #fff;
+	bottom: 22px !important;
+}
+.xdsoft_horizontal .xdsoft_slider_label.xdsoft_slider_label_top:after{
+	border-top-color:#000;
+}
