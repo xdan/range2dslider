@@ -1,9 +1,13 @@
-!function($){
+!function($){	
 	var defaultOptions = {
 		axis:[[0,10],[0,10]],
-		value:[[0,0],[5,5]],
-		showRanges:[[0,1]],
+		value:[[0,0]],
 		
+		projections:false,
+		
+		showRanges:false,
+		
+		skin:'skin1',
 		className:'range2dslider',
 		style:'',
 		
@@ -13,7 +17,11 @@
 		y:'bottom',
 		
 		grid:true,
-		
+		gridStyle:{
+			width:0.5,
+			color:'#888',
+			dashed:[5,2]
+		},
 		round:false,
 		roundMethod:Math.round,
 		
@@ -26,13 +34,30 @@
 		onlyGridPoint:false,
 		gridStep:false,
 		
-		outOfRange:true,
+		outOfRange:false,
 		
 		allowAxisMove:['both'], // 'x','y','both'
 		
-		printValue:function(value){
+		printLabel:function( value ){
 			return value[0].toFixed(2)+'-'+value[1].toFixed(2)
 		},
+		
+		printValue:function( value ){
+			var s = [],i;
+			for(i =0;i<value.length;i++){
+				if( $.isArray(value[i]) ){
+					s.push(value[i].join('|'));
+				}else{
+					s.push(value.join('|'));
+					break;
+				}		
+			}			
+			return s.join(';');
+		},
+		
+		disabled: false,
+		
+		runnerClassSkin:['skin1','skin1'],
 	};
 	
 	Boolean.prototype.xd = Function.prototype.xd = Number.prototype.xd = String.prototype.xd = Array.prototype.xd = function( i,defaultValue ){
@@ -52,6 +77,21 @@
 		}
 	};
 	
+	function drawProjections( slider,options,x,y ){
+		if( options.projections ){
+			if( !slider.projections ){
+				slider.projections = [];
+				slider.projections.push($('<div class="xdsoft_projection axisx"></div>'));
+				slider.projections[0].append('<span class="xdsoft_projection_value_x"></span>');
+				slider.projections.push($('<div class="xdsoft_projection axisy"></div>'));
+				slider.projections[1].append('<span class="xdsoft_projection_value_y"></span>');
+				$(slider).parent().append(slider.projections);
+			}
+			slider.projections[0].css(options.y,y);
+			slider.projections[1].css(options.x,x-1);
+		}
+	}
+	
 	function parseValue(str){
 		var s = str.split(';'),i,value=[], prs = [];
 		for(i =0;i<s.length;i++){
@@ -63,82 +103,42 @@
 		return value;
 	}
 	
-	function stringifyValue( value ){
-		var s = [],i;
-		for(i =0;i<value.length;i++){
-			if( $.isArray(value[i]) ){
-				s.push(value[i].join('|'));
-			}else{
-				s.push(value.join('|'));
-				break;
-			}		
-		}			
-		return s.join(';');
-	}
+
 	
-	function init(_this){
-		var $input = $(_this),i;
-			
-		if( $input.hasClass('xdsoft') )
-			return;
-			
-		$input.addClass('xdsoft');
-		
-		$input.hide();
-		
-		
-		_this.sliderActive = 0;
-		_this.$range2DSlider = $('<div '+( _this.options.style?'style="'+_this.options.style+'"':'')+' class="xdsoft_range2dslider '+_this.options.className+'"></div>');
-		_this.$sliderBox = $('<div class="xdsoft_range2dslider_box xdsoft_range2dslider_box_'+_this.options.x+' xdsoft_range2dslider_box_'+_this.options.y+'"></div>'),
-		_this.$sliders = [];
-		_this.$ranges = [];
-		
-		_this.$range2DSlider.on('xchange.xdsoft',function(){
-			$input
-				.attr('value',stringifyValue(_this.values))
-				.val(stringifyValue(_this.values))
-				.trigger('change');
-		});	
-		
-		_this.$sliderBox.on('mousedown.xdsoft', function( e ){
-			var x = e.offsetX==undefined?e.layerX:e.offsetX,
-				y = e.offsetY==undefined?e.layerY:e.offsetY;
-			$('html').addClass('xdsoft_noselect');
-			_this.getValue(_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
-			if( !_this.options.onlyGridPoint ){
-				_this.setValue( _this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
-			}
-		});
-		
-		if( _this.options.tooltip.xd(0) ){
-			_this.$range2DSlider.on('xchange.xdsoft',function(){
-				for(i=0;i<_this.values.length;i++){
-					_this.$sliders[i][0]&&
-						_this.$sliders[i][0].span&&
-							_this.$sliders[i][0].span.html(_this.options.printValue.xd(i).call(_this.$sliders[i][0].span,_this.values[i]));
-				}
-			});
-		}
-		
-		$(window).on('resize.xdsoft',function(){
-			setTimeout(function(){
-				_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
-				_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
-				_this.grid();
-				for(i=0;i<_this.values.length;i++)
-					_this.setValue(i,_this.values[i][0],_this.values[i][1]);
-			},100);
-		});
-		
-		_this.roundValue = function(_val){
+	var	roundValue = function(_this,_val){
 			if( _this.options.round ){
 				return [_this.options.roundMethod(_val[0]),_this.options.roundMethod(_val[1])];
 			}
 			return _val;
-		};
-			
-		_this.setValue = function ( sliderId,relX,relY ){
+		},
+		
+		pos1,pos2,bound = [0,0,0,0];
+		updateSliderRanges = function ( _this,ranges ){
+			if( !ranges )
+				return;
+			var css = {};
+			for( var i = 0;i<ranges.length;i++ ){	
+				if( !_this.values[ranges[i].rb[0]]||!_this.values[ranges[i].rb[1]] )
+					continue;
+				pos1 = valueToXY(_this,_this.values[ranges[i].rb[0]][0],_this.values[ranges[i].rb[0]][1]);
+				pos2 = valueToXY(_this,_this.values[ranges[i].rb[1]][0],_this.values[ranges[i].rb[1]][1]);
+				
+				bound[0] = Math.max(pos1[0],pos2[0]);
+				bound[1] = Math.max(pos1[1],pos2[1]);
+				bound[2] = Math.min(pos1[0],pos2[0]);
+				bound[3] = Math.min(pos1[1],pos2[1]);
+				css[_this.options.x] = bound[2]+'px';
+				css[_this.options.y] = bound[3]+'px';
+				css['width'] = (bound[0]-bound[2])+'px';
+				css['height'] = (bound[1]-bound[3])+'px';
+				
+				ranges[i].rect.css(css);
+			}
+		},
+		
+		valueToXY = function( _this,relX,relY ){
 			if( !_this.options.outOfRange ){
+				
 				if( relX<_this.options.axis[0][0] ){
 					relX = _this.options.axis[0][0];
 				}else if( relX>_this.options.axis[0][_this.options.axis[0].length-1] ){
@@ -149,143 +149,302 @@
 				}else if( relY>_this.options.axis[1][_this.options.axis[1].length-1] ){
 					relY = _this.options.axis[1][_this.options.axis[1].length-1];
 				}
+				
 			}
-			var posX = ((relX-_this.options.axis[0][0])/(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0]))*_this.limitX,
-				posY = ((relY-_this.options.axis[1][0])/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0]))*_this.limitY;
 			
-			
-			
-			_this.$sliders[sliderId][0].style[_this.options.x] = Math.round(posX)+'px';
-			_this.$sliders[sliderId][0].style[_this.options.y] = Math.round(posY)+'px';
-			
-			_this.values[sliderId] = $.extend(true,_this.values[sliderId],_this.roundValue([relX,relY]));
-			
-			_this.$range2DSlider.trigger('xchange.xdsoft');
-		};
+			return [
+				((relX-_this.options.axis[0][0])/(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0]))*_this.limitX,
+				((relY-_this.options.axis[1][0])/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0]))*_this.limitY,
+				relX,
+				relY
+			];
+		},
 		
-		_this.getValue = function(sliderId, x,y ){
+		XYToValue = function( _this,x,y,sliderId ){
 			var allowAxis = _this.options.allowAxisMove.xd(sliderId,'both');
-			_this.values[sliderId] = $.extend(true,_this.values[sliderId],_this.roundValue([
+			
+			return $.extend(true,_this.values[sliderId],roundValue(_this,[
 				(allowAxis=='x'||allowAxis=='both')?(_this.limitX?(parseInt(x)/_this.limitX)*(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0])+_this.options.axis[0][0]:0):_this.values[sliderId][0],
 				(allowAxis=='y'||allowAxis=='both')?(_this.limitY?(parseInt(y)/_this.limitY)*(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0])+_this.options.axis[1][0]:0):_this.values[sliderId][1]
 			]));
+		},
+		
+		setValue = function ( _this,sliderId,relX,relY ){
+			
+			var pos = valueToXY(_this,relX,relY);
+			
+			if( _this.options.projections.xd(sliderId) ){
+				drawProjections( _this.$runners[sliderId][0],_this.options,pos[0],pos[1] )
+			}
+			
+			_this.$runners[sliderId][0].style[_this.options.x] = Math.round(pos[0])+'px';
+			_this.$runners[sliderId][0].style[_this.options.y] = Math.round(pos[1])+'px';
+			
+			_this.values[sliderId] = $.extend(true,_this.values[sliderId],roundValue(_this,[pos[2],pos[3]]));
+			
+			if( _this.$runners[sliderId][0].ranges.length )
+				updateSliderRanges(_this,_this.$runners[sliderId][0].ranges);
+			
+			_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
+		},
+		
+		getValue = function( _this,sliderId, x,y ){
+			
+			_this.values[sliderId] = XYToValue(_this,x,y,sliderId);
+			
+			if( _this.options.projections.xd(sliderId) ){
+				drawProjections( _this.$runners[sliderId][0],_this.options,x,y )
+			}
+			
+			if( _this.$runners[sliderId][0].ranges.length )
+				updateSliderRanges(_this,_this.$runners[sliderId][0].ranges);
+			
 			if( _this.options.onlyGridPoint ){
-				_this.setValue( sliderId,_this.values[sliderId][0],_this.values[sliderId][1] )
+				setValue( _this,sliderId,_this.values[sliderId][0],_this.values[sliderId][1] )
 			}else{
-				_this.$range2DSlider.trigger('xchange.xdsoft');
+				_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
 			}
 			return _this.values;
-		}
+		},
 		
-		_this.grid = function(){
+		createGrid = function( _this ){
 			if( _this.options.grid ){
-				_this.$sliderBox.addClass('xdsoft_grid');
-				var gridSize = 
+				if( !_this.$grid ){
+					_this.$grid = $('<canvas class="xdsoft_range2dslider_grid"></canvas>');
+					_this.$sliderBox.append(_this.$grid);
+				}
+				var context = _this.$grid.get(0).getContext("2d"),
+					gridSize = 
 					!_this.options.gridStep?[
 						Math.round(_this.limitX/(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0])),
 						Math.round(_this.limitY/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0]))
 					]:$.extend(true,[],_this.options.gridStep);
 				
-				_this.$sliderBox.css({
-					'background-size':gridSize[0]+'px '+gridSize[1]+'px',
-					'background-position':_this.options.x+' '+_this.options.y,
-				});
+				context.translate(0.5,0.5);
+				
+				
+				if( gridSize && gridSize[0] ){
+					// for old browser
+					/*_this.$grid.css({
+						'background-size':gridSize[0]+'px '+gridSize[1]+'px',
+						'background-position':_this.options.x+' '+_this.options.y,
+					});*/
+					var startx = 0,starty = 0;
+					_this.$grid.get(0).width = _this.$grid.get(0).width;
+					
+					_this.$grid.attr({
+						width:_this.limitX+'px',
+						height:_this.limitY+'px'
+					});
+					if (!context.setLineDash) {
+						context.setLineDash = function () {}
+					}
+					context.beginPath();
+					if( gridSize[0] ){
+						while( startx+gridSize[0]<_this.limitX-3 ){
+							startx+=gridSize[0];
+							context.moveTo( startx+0.5, 0);
+							context.lineTo( startx+0.5, _this.limitY);
+						}
+					}
+					if( gridSize[1] ){
+						while( starty+gridSize[1]<_this.limitY+3 ){
+							starty+=gridSize[1];
+							context.moveTo(  0,starty+0.5 );
+							context.lineTo( _this.limitX,starty+0.5 );
+						}
+					}
+					context.setLineDash(_this.options.gridStyle.dashed);
+					context.lineWidth = _this.options.gridStyle.width;
+					context.strokeStyle = _this.options.gridStyle.color;
+					context.stroke();
+				}
+				
+				
 			}else{
-				_this.$sliderBox.removeClass('xdsoft_grid');
+				_this.$grid&&_this.$grid.remove();
 			}
 		};
+
+	function destroy(_this){
+		var $input = $(_this),
+			i;
+			
+		if( !$input.hasClass('xdsoft') )
+			return;
+			
+		$input.removeClass('xdsoft');
+		$input.show();
+		delete _this.sliderActive;
+		_this.$range2DSlider.remove();
+		delete _this.$range2DSlider;
+		delete _this.$sliderBox;
+		delete _this.$runners;
+		delete _this.values;
+		$(window).off('resize.xdsoft',_this.recalcAllposition);
+		delete _this.recalcAllposition;
+	};
 	
-		_this.$range2DSlider.append(_this.$sliderBox);
-		$input.after(_this.$range2DSlider);
+	function init(_this){
+		var $input = $(_this),
+			i;
+			
+		if( $input.hasClass('xdsoft') )
+			return;
+			
+		$input.addClass('xdsoft');
+		
+		$input.hide();
+		
+		
+		_this.sliderActive = 0;
+		_this.$range2DSlider = $('<div '+( _this.options.style?'style="'+_this.options.style+'"':'')+' class="xdsoft_range2dslider '+_this.options.className+' xdsoft_range2dslider_'+_this.options.skin+'"></div>');
+		_this.$sliderBox = $('<div class="xdsoft_range2dslider_box xdsoft_range2dslider_box_'+_this.options.x+' xdsoft_range2dslider_box_'+_this.options.y+'"></div>'),
+		_this.$runners = [];			
+		
+		_this.$range2DSlider.on('xchange.xdsoft',function(){
+			$input
+				.attr('value',_this.options.printValue.call(_this,_this.values))
+				.val(_this.options.printValue.call(_this,_this.values))
+				.trigger('change');
+		});	
+		
+		
+		_this.$sliderBox.on('mousedown.xdsoft', function( e ){
+			var x = e.offsetX==undefined?e.layerX:e.offsetX,
+				y = e.offsetY==undefined?e.layerY:e.offsetY;
+			$('html').addClass('xdsoft_noselect');
+			getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
+			if( !_this.options.onlyGridPoint ){
+				setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
+			}
+		});
+		
+
+		_this.$range2DSlider.on('xchange.xdsoft', function(e,i){
+			_this.options.tooltip.xd(i)&&
+				_this.$runners[i][0]&&
+					_this.$runners[i][0].span&&
+						_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]));
+		});
+		
+		var resizeTimer = 0;
+		_this.recalcAllposition = function(){
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(function(){
+				_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
+				_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
+				createGrid(_this);
+				for(var l=0;l<_this.values.length;l++)
+					setValue(_this,l,_this.values[l][0],_this.values[l][1]);
+			},100);
+		};
+		
+		$(window).on('resize.xdsoft',_this.recalcAllposition);
+		
+		_this.$range2DSlider
+				.append(_this.$sliderBox);
+				
+		$input
+			.after(_this.$range2DSlider);
 	}
 	
 	$.fn.xdSoftDraggable = function( _options ){
 		var options = $.extend(true,{},{
-			x:'left',
-			y:'bottom',
-			allowAxisMove:'both', // 'x','y','both'
-			onMove:function(){},
-		},_options);
+				x:'left',
+				y:'bottom',
+				allowAxisMove:'both', // 'x','y','both'
+				onMove:function(){},
+				disabled: false,
+			},_options),
+			
+			drag = false,
+			oldX, 
+			oldY,
+			newX, 
+			newY, 
+			oldTop, 
+			oldLeft,
+			limitX,
+			limitY,
+			
+			xdSoftDraggableMove = function( event ){
+				if( drag&&!options.disabled ){
+					if( options.allowAxisMove=='both' || options.allowAxisMove=='x'){
+						newX = oldLeft+(options.x=='right'?-1:1)*(event.clientX-oldX);
+						if( newX < 0 ) 
+							newX = 0;
+						if( newX > limitX ) 
+							newX = limitX;
+					}
+					if( options.allowAxisMove=='both' || options.allowAxisMove=='y'){
+						newY = oldTop+(options.y=='bottom'?-1:1)*(event.clientY-oldY);
+						if( newY < 0 ) 
+							newY = 0;
+						if( newY > limitY ) 
+							newY = limitY;
+					}
+					
+
+					draggableElement.style[options.x] = newX + 'px';
+					draggableElement.style[options.y] = newY+'px';
+					
+					if( options.onMove&&$.isFunction(options.onMove) ){
+						options.onMove.call(draggableElement,newX,newY);
+					}
+				}
+			},
+			
+			xdSoftDraggableMouseup = function( event ){
+				drag = false;
+				$('html').removeClass('xdsoft_noselect');
+			};
 		
+		$(window)
+			.off('mousemove.xdSoftDraggable',xdSoftDraggableMove)
+			.off('mouseup.xdSoftDraggable',xdSoftDraggableMouseup)
+			.on('mousemove.xdSoftDraggable',xdSoftDraggableMove)
+			.on('mouseup.xdSoftDraggable',xdSoftDraggableMouseup);
+			
 		return this.each(function(){
 			var _this = this,
-				$this = $(_this),
-				drag = false, 
-				oldX, 
-				oldY,
-				newX, 
-				newY, 
-				oldTop, 
-				oldLeft,
-				limitX,
-				limitY;
-				
+				$this = $(_this);	
+
 			$this
 				.off('mousedown.xdSoftDraggable')
 				.on('mousedown.xdSoftDraggable',function( event ){
+					draggableElement = _this;
 					drag 		= 	true;
 					oldX 		= 	event.clientX;
 					oldY 		= 	event.clientY;
 					newX 		= 	oldLeft 	= 	(!isNaN(parseInt(_this.style[options.x]))&&parseInt(_this.style[options.x]))?parseInt(_this.style[options.x]):0;
 					newY 		= 	oldTop		= 	(!isNaN(parseInt(_this.style[options.y]))&&parseInt(_this.style[options.y]))?parseInt(_this.style[options.y]):0;
-					limitX 		= 	$this.parent()[0].clientWidth;
-					limitY	 	=  	$this.parent()[0].clientHeight;
+					limitX 		= 	_this.parentNode.clientWidth;
+					limitY	 	=  	_this.parentNode.clientHeight;
 					$('html').addClass('xdsoft_noselect');
 					event.stopPropagation();
-				});
-				
-			if( _this.xdSoftDraggableMove )
-				$(window)
-					.off('mousemove.xdSoftDraggable',_this.xdSoftDraggableMove)
-					.off('mouseup.xdSoftDraggable',_this.xdSoftDraggableMouseup);
-					
-			$(window)	
-				.on('mousemove.xdSoftDraggable',_this.xdSoftDraggableMove = function( event ){
-					if( drag ){
-						if( options.allowAxisMove=='both' || options.allowAxisMove=='x'){
-							newX = oldLeft+(options.x=='right'?-1:1)*(event.clientX-oldX);
-							if( newX < 0 ) 
-								newX = 0;
-							if( newX > limitX ) 
-								newX = limitX;
-						}
-						if( options.allowAxisMove=='both' || options.allowAxisMove=='y'){
-							newY = oldTop+(options.y=='bottom'?-1:1)*(event.clientY-oldY);
-							if( newY < 0 ) 
-								newY = 0;
-							if( newY > limitY ) 
-								newY = limitY;
-						}
-						
-	
-						_this.style[options.x] = newX + 'px';
-						_this.style[options.y] = newY+'px';
-						
-						if( options.onMove&&$.isFunction(options.onMove) ){
-							options.onMove.call(_this,newX,newY);
-						}
-					}
-				})
-				.on('mouseup.xdSoftDraggable',_this.xdSoftDraggableMouseup = function( event ){
-					drag = false;
-					$('html').removeClass('xdsoft_noselect');
+					event.preventDefault();
 				});
 		});
 	};
-	$.fn.range2dslider = $.fn.range2DSlider = function(_options){
-	
-		
-		
-		this.val = function( value ){
-			if( typeof(value) == 'undefined' )
-				return parseValue(this.attr('value'));
-			else{
-				this.attr('value',stringifyValue(value));
-				this.range2dslider();
+	$.fn.range2dslider = $.fn.range2DSlider = function( _options,arg2 ){
+		if( typeof(_options)=='string' ){
+			switch(_options){
+				case 'destroy':
+					return this.each(function(){
+						destroy(this);
+					});
+				break;
+				case 'disabled':
+					return this.range2dslider({disabled:true});
+				break;
+				case 'value':
+					return this.range2dslider({value:arg2});
+				break;
 			}
-		};
-		
-		return this.each(function(){
+			return this;
+		}else
+		 return this.each(function(){
 			var _this = this,
 				i,j,
 				$input = $(_this),
@@ -313,7 +472,7 @@
 					_this.values = parseValue($input.attr('value'));
 				}
 			}else{
-				$input.attr('value',stringifyValue(_this.values))
+				$input.attr('value',options.printValue.call(_this,_this.values))
 			}
 			
 			
@@ -333,67 +492,76 @@
 				_this.options.axis[1] = [0,1];
 				
 			init(_this);
-			var $slider;
+			
+			var $runner;
 			for(i=0;i<_this.values.length;i++){
-				if( !_this.$sliders[i] ){
-					_this.$sliders.push($slider = $('<div class="xdsoft_range2dslider_slider xdsoft_range2dslider_slider'+i+'"></div>'));
-					$slider[0].ranges = [];
+				if( !_this.$runners[i] ){
+					_this.$runners.push($runner = $('<div class="xdsoft_range2dslider_runner xdsoft_range2dslider_runner'+i+'"></div>'));
+					$runner[0].ranges = [];
+					$runner.addClass('xdsoft_range2dslider_'+_this.options.runnerClassSkin.xd(i));
+				}else{
+					for(var t=0;t<_this.$runners[i][0].ranges.length;t++)
+						_this.$runners[i][0].ranges[t].rect.remove();
+					_this.$runners[i][0].ranges = [];
 				}
-			}
-			
-			// for second init remove extra sliders
-			for(i=_this.values.length;i<_this.$sliders.length;i++){
-				_this.$sliders[i].remove();
-			}
-			_this.$sliders.length = _this.values.length;
-			
-			if( _this.options.showRanges&&$.isArray(_this.options.showRanges)&&_this.options.showRanges.length ){
-				var range,$range ;
-				for(i=0;i< _this.options.showRanges.length;i++){
-					range = _this.options.showRanges[i];
-					if( _this.$sliders[range.xd(0)] && _this.$sliders[range.xd(1)] ){
-						_this.$ranges.push($range=$('<div class="xdsoft_range2dslider_range xdsoft_range2dslider_range'+i+'"></div>'));					
-						_this.$sliders[range.xd(0)][0].ranges.push({rng:$range,chnk:_this.$sliders[range.xd(1)][0]});
-						_this.$sliders[range.xd(1)][0].ranges.push({rng:$range,chnk:_this.$sliders[range.xd(0)][0]});
-					}
-				}
-			}
-			
-			for(i=0;i<_this.values.length;i++)
-				!function(i){
+				
+				!function(i,$runner){
 					var $span,spanpos;
 					
 					spanpos = _this.options.tooltip.xd(i,'top');
-					if( spanpos ){
-						if(!_this.$sliders[i][0].span){
-							$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwaysShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printValue.xd(i).call($span,_this.values[i])+'</span>');
-							_this.$sliders[i].append($span);
-							_this.$sliders[i][0].span = $span;
-						}else{
-							_this.$sliders[i][0].span.addClass('xdsoft_label_'+spanpos);
-						}
+					if( spanpos&&!$runner[0].span ){
+						$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwaysShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printLabel.xd(i).call($runner[0],_this.values[i])+'</span>');
+						$runner.append($span);
+						$runner[0].span = $span;
 					}
-					_this.$sliders[i]
+					
+					$runner
 						.xdSoftDraggable({
+							disabled: _this.options.disabled,
 							x:_this.options.x,
 							y:_this.options.y,
 							allowAxisMove:_this.options.allowAxisMove.xd(i,'both'),
 							onMove:function(x,y){
-								_this.getValue(i,x,y);
+								getValue(_this,i,x,y);
 							}
 						})
+						.off('click.xdsoft')
 						.on('click.xdsoft', function( e ){
 							_this.sliderActive = i;
 							e.stopPropagation();
 						});
-				}(i);
+				}(i,_this.$runners[i]);
+			}
+			
+			// for second init remove extra sliders
+			for(i=_this.values.length;i<_this.$runners.length;i++){
+				_this.$runners[i].remove();
+			}
+			_this.$runners.length = _this.values.length;
+			
+			if( $.isArray(_this.options.showRanges)&&_this.options.showRanges.length ){
+				var range,$range ;
+				for(i=0;i< _this.options.showRanges.length;i++){
+					rangeBetween = _this.options.showRanges.xd(i);
+					if( rangeBetween && $.isArray(rangeBetween) && rangeBetween.length && rangeBetween[0]!=rangeBetween[1] && _this.$runners[rangeBetween[0]] && _this.$runners[rangeBetween[1]] ){
+						$range = $('<div class="xdsoft_range2dslider_range xdsoft_range2dslider_range'+i+'"></div>');					
+						_this.$runners[rangeBetween[0]][0].ranges.push({rect:$range,rb:rangeBetween});
+						_this.$runners[rangeBetween[1]][0].ranges.push({rect:$range,rb:rangeBetween});
+						_this.$sliderBox.append($range);
+						$range.on('mousedown',function(e){
+							e.stopPropagation();
+						});
+					}
+				}
+			}
+				
 			
 			_this.$sliderBox
 				.css({
 					height:_this.options.height,
 					width:_this.options.width,
 				})
-				.append(_this.$sliders);
+				.append(_this.$runners);
 			
 			
 			if( _this.options.showLegend && ( !_this.legends||_this.options.recalcLegends ) ){
@@ -482,26 +650,10 @@
 						.css('width',offsets[0]+'px');
 				}
 			}
-			
-			_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
-			_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
 
-			_this.grid();
+			_this.recalcAllposition();
 			
 			
-			/*for(i=0;i<value.length;i++)
-				$sliders[i]
-					.css('margin-'+_this.options.x,'-'+Math.round($sliders[i][0].offsetWidth/2)+'px')
-					.css('margin-'+_this.options.y,'-'+Math.round($sliders[i][0].offsetHeight/2)+'px');
-			*/	
-			
-			
-			for(i=0;i<_this.values.length;i++)
-				_this.setValue(i,_this.values[i][0],_this.values[i][1] );
-			
-			
-			
-			/* End Insert in DOM */
 		});
 	};
 	$.fn.range2DSlider.defaultOptions = defaultOptions;
