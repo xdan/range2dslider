@@ -177,7 +177,7 @@
 		},
 		
 		setValue = function ( _this,sliderId,relX,relY ){
-			
+				
 			var pos = valueToXY(_this,relX,relY);
 			
 			if( _this.options.projections.xd(sliderId) ){
@@ -196,6 +196,9 @@
 		},
 		
 		getValue = function( _this,sliderId, x,y ){
+			
+			if( _this.options.disabled )
+				return _this.values;
 			
 			_this.values[sliderId] = XYToValue(_this,x,y,sliderId);
 			
@@ -235,11 +238,6 @@
 				
 				
 				if( gridSize && gridSize[0] ){
-					// for old browser
-					/*_this.$grid.css({
-						'background-size':gridSize[0]+'px '+gridSize[1]+'px',
-						'background-position':_this.options.x+' '+_this.options.y,
-					});*/
 					var startx = 0,starty = 0;
 					_this.$grid.get(0).width = _this.$grid.get(0).width;
 					
@@ -265,6 +263,7 @@
 							context.lineTo( _this.limitX,starty+0.5 );
 						}
 					}
+					
 					context.setLineDash(_this.options.gridStyle.dashed);
 					context.lineWidth = _this.options.gridStyle.width;
 					context.strokeStyle = _this.options.gridStyle.color;
@@ -511,12 +510,23 @@
 				
 			init(_this);
 			
+			if( _this.options.disabled ){
+				_this.$range2DSlider.addClass('xdsoft_range2dslider_disabled');
+			}else{
+				_this.$range2DSlider.removeClass('xdsoft_range2dslider_disabled');
+			}
+			
 			var $runner;
 			for(i=0;i<_this.values.length;i++){
 				if( !_this.$runners[i] ){
 					_this.$runners.push($runner = $('<div class="xdsoft_range2dslider_runner xdsoft_range2dslider_runner'+i+'"></div>'));
+					$runner.append($inrunner = $('<input type="button">'));
 					$runner[0].ranges = [];
 					$runner.addClass('xdsoft_range2dslider_'+_this.options.runnerClassSkin.xd(i));
+					$inrunner.on('focus',function(){
+						$('.xdsoft_range2dslider_active').removeClass('xdsoft_range2dslider_active');
+						$(this).parent().addClass('xdsoft_range2dslider_active');
+					});
 				}else{
 					for(var t=0;t<_this.$runners[i][0].ranges.length;t++)
 						_this.$runners[i][0].ranges[t].rect.remove();
@@ -546,6 +556,7 @@
 						.off('click.xdsoft')
 						.on('click.xdsoft', function( e ){
 							_this.sliderActive = i;
+							$(this).find('input').focus();
 							e.stopPropagation();
 						});
 				}(i,_this.$runners[i]);
