@@ -1,0 +1,46 @@
+{
+    "name": "range2dslider",
+    "version": "1.0.0",
+	"title": "jQuery 2D Slider and Range",
+    "description": "jQuery plugin select range or single value from period or 2d board",
+    "keywords": [
+		"slider",
+		"range",
+		"input",
+		"2d",
+		"select",
+		"value",
+		"between",
+		"range2dslider",
+		"horizontal",
+		"ui",
+		"scroller",
+		"picker",
+		"vertical",
+		"jquery",
+		"touch"
+    ],
+   "author": {
+		"name": 	"Chupurnov Valeriy",
+		"email": 	"chupurnov@gmail.com",
+		"url": 		"http://xdsoft.net/contacts.html"
+	},
+	"maintainers": [{
+		"name": 	"Chupurnov Valeriy",
+		"email": 	"chupurnov@gmail.com",
+		"url": 		"http://xdsoft.net"
+	}],
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/xdan/range2dslider/blob/master/LICENSE"
+        }
+    ],
+    "bugs": "https://github.com/xdan/range2dslider/issues",
+    "homepage": "http://xdsoft.net/jqplugins/range2dslider/",
+    "docs": "http://xdsoft.net/jqplugins/range2dslider/",
+    "download": "https://github.com/xdan/range2dslider/archive/master.zip",
+    "dependencies": {
+        "jquery": ">=1.8"
+    }
+}
