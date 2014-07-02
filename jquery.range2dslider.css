@@ -32,6 +32,7 @@ user-select: none;
 	position:absolute;
 	cursor:pointer;
 	z-index:5;
+	background:#fff;
 	background:rgba(255,255,255,0.9);
 	border:1px solid #ccc;
 	border-radius:50%;
@@ -226,7 +227,7 @@ span.xdsoft_slider_label.xdsoft_slider_label_right{
 	margin-left:-5px;
 }
 .xdsoft_vertical .xdsoft_range2dslider_box.xdsoft_range2dslider_box_bottom .xdsoft_range2dslider_runner{
-	margin-bottom:-5px;
+	margin-bottom:-8px;
 }
 .xdsoft_vertical .xdsoft_range2dslider_box.xdsoft_range2dslider_box_right .xdsoft_range2dslider_runner{
 	margin-right:-5px;

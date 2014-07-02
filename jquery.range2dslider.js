@@ -16,6 +16,8 @@
 		x:'left',
 		y:'bottom',
 		
+		doSetPositionOnBoxClick:true,
+		
 		grid:true,
 		gridStyle:{
 			width:0.5,
@@ -57,7 +59,7 @@
 		
 		disabled: false,
 		
-		runnerClassSkin:['skin1','skin1'],
+		runnerClassSkin:['skin1','skin1']
 	};
 	
 	Boolean.prototype.xd = Function.prototype.xd = Number.prototype.xd = String.prototype.xd = Array.prototype.xd = function( i,defaultValue ){
@@ -213,6 +215,10 @@
 					_this.$grid = $('<canvas class="xdsoft_range2dslider_grid"></canvas>');
 					_this.$sliderBox.append(_this.$grid);
 				}
+			
+				if( !_this.$grid.get(0).getContext )
+					return;
+					
 				var context = _this.$grid.get(0).getContext("2d"),
 					gridSize = 
 					!_this.options.gridStep?[
@@ -309,17 +315,17 @@
 				.trigger('change');
 		});	
 		
-		
-		_this.$sliderBox.on('mousedown.xdsoft', function( e ){
-			var x = e.offsetX==undefined?e.layerX:e.offsetX,
-				y = e.offsetY==undefined?e.layerY:e.offsetY;
-			$('html').addClass('xdsoft_noselect');
-			getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
-			if( !_this.options.onlyGridPoint ){
-				setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
-			}
-		});
-		
+		if( _this.options.doSetPositionOnBoxClick ){
+			_this.$sliderBox.on('mousedown.xdsoft', function( e ){
+				var x = e.offsetX==undefined?e.layerX:e.offsetX,
+					y = e.offsetY==undefined?e.layerY:e.offsetY;
+				$('html').addClass('xdsoft_noselect');
+				getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
+				if( !_this.options.onlyGridPoint ){
+					setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
+				}
+			});
+		}
 
 		_this.$range2DSlider.on('xchange.xdsoft', function(e,i){
 			_this.options.tooltip.xd(i)&&
@@ -355,7 +361,7 @@
 				y:'bottom',
 				allowAxisMove:'both', // 'x','y','both'
 				onMove:function(){},
-				disabled: false,
+				disabled: false
 			},_options),
 			
 			drag = false,
@@ -400,10 +406,12 @@
 				$('html').removeClass('xdsoft_noselect');
 			};
 		
-		$(window)
+		$(document.body)
 			.off('mousemove.xdSoftDraggable',xdSoftDraggableMove)
+			.on('mousemove.xdSoftDraggable',xdSoftDraggableMove);
+			
+		$([document.body,window])	
 			.off('mouseup.xdSoftDraggable',xdSoftDraggableMouseup)
-			.on('mousemove.xdSoftDraggable',xdSoftDraggableMove)
 			.on('mouseup.xdSoftDraggable',xdSoftDraggableMouseup);
 			
 		return this.each(function(){
@@ -445,11 +453,16 @@
 			return this;
 		}else
 		 return this.each(function(){
+			
+			if( _options&&_options.template&&$.fn.range2DSlider.templates[_options.template] )
+				_options = $.extend(true,{},$.fn.range2DSlider.templates[_options.template],_options);
+			
 			var _this = this,
 				i,j,
 				$input = $(_this),
 				options = $.extend(true,{},$.fn.range2DSlider.defaultOptions,_options);
 			
+				
 			_this.values = $.extend(true,[],[],options.value);
 			
 			if( (!_options||!_options.axis)&&!_this.options ){
@@ -559,7 +572,7 @@
 			_this.$sliderBox
 				.css({
 					height:_this.options.height,
-					width:_this.options.width,
+					width:_this.options.width
 				})
 				.append(_this.$runners);
 			
@@ -657,4 +670,30 @@
 		});
 	};
 	$.fn.range2DSlider.defaultOptions = defaultOptions;
+	$.fn.range2DSlider.templates = {
+		horizontal:{
+			grid:false,
+			height:'7px',
+			className:'xdsoft_horizontal',
+			showRanges:[[0,1]],
+			showLegend:[1,0],
+			allowAxisMove:['x'],
+			printLabel:function( val ){
+				return val[0];
+			}
+		},
+		vertical:{
+			grid:false,
+			height:'100px',
+			width:'0px',
+			className:'xdsoft_vertical',
+			alwaysShowTooltip:[false],
+			tooltip:['right'],
+			showLegend:[0,0],
+			allowAxisMove:['y'],
+			printLabel:function( val ){
+				return val[1];
+			}
+		}
+	};
 }(jQuery);

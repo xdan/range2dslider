@@ -49,27 +49,20 @@
 		printLabel:function( val ){
 			this.projections&&this.projections[0].find('.xdsoft_projection_value_x').text(val[1].toFixed(5));
 			return val[0].toFixed(5);
-		},
-	}).range2DSlider('value',[[0,1],[3,0],[6,6]]);
+		}
+	})
+		.range2DSlider('value',[[0,1],[3,0],[6,6]]);
 	$('#slider').range2DSlider();
 	</script>
 	<h2>Horizontal slider</h2>
 	<input id="slider1">
 	<script>
 	$('#slider1').range2DSlider({
-		grid:false,
-		height:0,
-		className:'xdsoft_horizontal',
-		showRanges:[[0,1]],
+		template:'horizontal',
 		value:[[5,0],[7,0]],
 		onlyGridPoint:true,
 		round:true,
-		showLegend:[1,0],
-		axis:[[-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10]],
-		allowAxisMove:['x'],
-		printLabel:function( val ){
-			return parseInt(val[0]);
-		},
+		axis:[[-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10]]
 	});
 	</script>
 	<h2>Vertical slider</h2>
@@ -82,21 +75,14 @@
 	<div style="clear:both;float:none;"></div>
 	<script>
 	$('.slider2').range2DSlider({
-		grid:false,
-		height:'100px',
-		width:'1px',
+		template:'vertical',
 		value:[[0,5]],
 		style:'float:left;margin-left:25px;',
-		className:'xdsoft_vertical',
-		alwaysShowTooltip:[false],
-		tooltip:['right'],
-		showLegend:[0,0],
 		axis:[[0,1],[0,10]],
-		allowAxisMove:['y'],
 		round:true,
 		printLabel:function( val ){
 			return val[1]+' yo';
-		},
+		}
 	});
 	</script>
 	<h2>Harmony slider sin(x)</h2>
@@ -150,7 +136,7 @@
 			allowAxisMove:['y'],
 			printLabel:function( val ){
 				return val[1].toFixed(2)+'<br>'+val[2];
-			},
+			}
 		}).range2DSlider('value',values);
 	</script>
 	<h2>Custom style slider</h2>
@@ -189,7 +175,7 @@
 		allowAxisMove:['x'],
 		printLabel:function( val ){
 			return val[0].toFixed(3);
-		},
+		}
 	}).range2DSlider('value',[[0.05,0]]);
 	</script>
 	</div>
