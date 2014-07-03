@@ -41,7 +41,7 @@
 		}
 	],
 	"homepage":"http://xdsoft.net/jqplugins/range2dslider/",
-	"repository": {
-		"type": "git", "url": "git://github.com:xdan/range2dSlider.git"
+	"repository":{
+		"type": "git", "url": "git://github.com:xdan/range2dslider.git"
 	}
 }
