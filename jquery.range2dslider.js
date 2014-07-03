@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Range2DSlider plugin v1.0.0
+ * @preserve jQuery Range2DSlider plugin v1.0.1
  * @homepage http://xdsoft.net/jqplugins/range2dslider/
  * (c) 2014, Chupurnov Valeriy.
  */
