@@ -11,8 +11,8 @@
 		"**/*.png",
 		"**/*.txt",
 		"**/*.md",
-		"**/*.html",
-	  ],
+		"**/*.html"
+	],
 	"keywords": [
 		"slider",
 		"range",
@@ -38,7 +38,7 @@
 			"name": 	"Chupurnov Valeriy",
 			"email": 	"chupurnov@gmail.com",
 			"homepage": "http://xdsoft.net/contacts.html"
-    }
+		}
 	],
 	"homepage":"http://xdsoft.net/jqplugins/range2dslider/",
 	"repository": {
