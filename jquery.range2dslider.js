@@ -36,7 +36,7 @@
 			},
 			
 			round:false,
-			roundMethod:Math.round,
+			roundMethod:Math.round, // work with round==true
 			
 			showLegend:[true,true],
 			recalcLegends:false,
