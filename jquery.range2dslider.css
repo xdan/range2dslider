@@ -44,10 +44,13 @@ opacity:0.7;
 .xdsoft_range2dslider_runner input{
 	color:transparent !important;
 	background:transparent !important;
-	border:transparent !important;
+	border:0px solid transparent !important;
 	outline:0px transparent !important;
-	width:1px;
-	height:1px;
+	width:1px !important;
+	height:1px !important;
+	-webkit-box-shadow:none !important;
+	-moz-box-shadow:none !important;
+	box-shadow:none !important;
 }
 .xdsoft_range2dslider_runner:hover{
 	z-index:6;
