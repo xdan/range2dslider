@@ -25,7 +25,7 @@
 			x:'left',
 			y:'bottom',
 			
-			doSetPositionOnBoxClick:true,
+			posOnBoxClick:true,
 			
 			grid:true,
 			gridStep:false,
@@ -327,7 +327,7 @@
 				.trigger('change');
 		});	
 		
-		if( _this.options.doSetPositionOnBoxClick ){
+		if( _this.options.posOnBoxClick ){
 			_this.$sliderBox.on('mousedown.xdsoft', function( e ){
 				var x = e.offsetX==undefined?e.layerX:e.offsetX,
 					y = e.offsetY==undefined?e.layerY:e.offsetY;
