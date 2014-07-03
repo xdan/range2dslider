@@ -233,7 +233,7 @@ span.xdsoft_slider_label.xdsoft_slider_label_right{
 	border-radius:3px;
 	border-style:solid;
 }
-.xdsoft_horizontal .xdsoft_range2dslider_range{
+.xdsoft_vertical .xdsoft_range2dslider_range{
 	min-width:7px;
 }
 

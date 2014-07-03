@@ -748,6 +748,7 @@
 			height:'100px',
 			width:'0px',
 			className:'xdsoft_vertical',
+			showRanges:[[0,1]],
 			alwaysShowTooltip:[false],
 			tooltip:['right'],
 			showLegend:[0,0],
