@@ -4,68 +4,76 @@
  * (c) 2014, Chupurnov Valeriy.
  */
 !function($){	
-	var defaultOptions = {
-		axis:[[0,10],[0,10]],
-		value:[[0,0]],
-		
-		projections:false,
-		
-		showRanges:false,
-		
-		skin:'skin1',
-		className:'range2dslider',
-		style:'',
-		
-		height:'100px',
-		width:'auto',
-		x:'left',
-		y:'bottom',
-		
-		doSetPositionOnBoxClick:true,
-		
-		grid:true,
-		gridStyle:{
-			width:0.5,
-			color:'#888',
-			dashed:[5,2]
-		},
-		round:false,
-		roundMethod:Math.round,
-		
-		showLegend:[true,true],
-		recalcLegends:false,
-		
-		tooltip:['top'], // false, 'top','left','right','bottom'
-		alwaysShowTooltip:[true], // false,true - work only with tooltip<>false
-		
-		onlyGridPoint:false,
-		gridStep:false,
-		
-		outOfRange:false,
-		
-		allowAxisMove:['both'], // 'x','y','both'
-		
-		printLabel:function( value ){
-			return value[0].toFixed(2)+'-'+value[1].toFixed(2)
-		},
-		
-		printValue:function( value ){
-			var s = [],i;
-			for(i =0;i<value.length;i++){
-				if( $.isArray(value[i]) ){
-					s.push(value[i].join('|'));
-				}else{
-					s.push(value.join('|'));
-					break;
-				}		
-			}			
-			return s.join(';');
-		},
-		
-		disabled: false,
-		
-		runnerClassSkin:['skin1','skin1']
-	};
+	var ARROWLEFT = 37,
+		ARROWUP = 38,
+		ARROWRIGHT = 39,
+		ARROWDOWN = 40,
+		defaultOptions = {
+			axis:[[0,10],[0,10]],
+			value:[[0,0]],
+			
+			projections:false,
+			
+			showRanges:false,
+			
+			skin:'skin1',
+			className:'range2dslider',
+			style:'',
+			
+			height:'100px',
+			width:'auto',
+			x:'left',
+			y:'bottom',
+			
+			doSetPositionOnBoxClick:true,
+			
+			grid:true,
+			gridStep:false,
+			gridStyle:{
+				width:0.5,
+				color:'#888',
+				dashed:[5,2]
+			},
+			
+			round:false,
+			roundMethod:Math.round,
+			
+			showLegend:[true,true],
+			recalcLegends:false,
+			
+			tooltip:['top'], // false, 'top','left','right','bottom'
+			alwaysShowTooltip:[true], // false,true - work only with tooltip<>false
+			
+			onlyGridPoint:false,
+			
+			
+			outOfRange:false,
+			
+			allowAxisMove:['both'], // 'x','y','both'
+			
+			printLabel:function( value ){
+				return value[0].toFixed(2)+'-'+value[1].toFixed(2)
+			},
+			
+			printValue:function( value ){
+				var s = [],i;
+				for(i =0;i<value.length;i++){
+					if( $.isArray(value[i]) ){
+						s.push(value[i].join('|'));
+					}else{
+						s.push(value.join('|'));
+						break;
+					}		
+				}			
+				return s.join(';');
+			},
+			
+			disabled: false,
+			
+			stepOnKeyNavigate:0.1,
+			
+			runnerClassSkin:['skin1','skin1']
+		};
 	
 	Boolean.prototype.xd = Function.prototype.xd = Number.prototype.xd = String.prototype.xd = Array.prototype.xd = function( i,defaultValue ){
 		if( !(this instanceof Array) )
@@ -494,7 +502,7 @@
 			
 			
 			if( !$.isArray(_this.values[0]) )
-				_this.values = [_this.values]
+				_this.values = [_this.values];
 			
 			if( _this.options )
 				_this.options = $.extend(true,{},_this.options,_options);
@@ -516,6 +524,7 @@
 				_this.$range2DSlider.removeClass('xdsoft_range2dslider_disabled');
 			}
 			
+			// create runners
 			var $runner;
 			for(i=0;i<_this.values.length;i++){
 				if( !_this.$runners[i] ){
@@ -523,10 +532,44 @@
 					$runner.append($inrunner = $('<input type="button">'));
 					$runner[0].ranges = [];
 					$runner.addClass('xdsoft_range2dslider_'+_this.options.runnerClassSkin.xd(i));
-					$inrunner.on('focus',function(){
-						$('.xdsoft_range2dslider_active').removeClass('xdsoft_range2dslider_active');
-						$(this).parent().addClass('xdsoft_range2dslider_active');
-					});
+					!function(i){
+						$inrunner
+							.on('focus',function(){
+								$('.xdsoft_range2dslider_active').removeClass('xdsoft_range2dslider_active');
+								$(this).parent().addClass('xdsoft_range2dslider_active');
+							})
+							.on('keydown',function( event ){
+								var relX = _this.values[i][0],
+									relY = _this.values[i][1],
+									ax = _this.options.allowAxisMove.xd(0,'both');
+								switch( event.which ){
+									case ARROWUP:
+										if( ax=='both'||ax=='y' ){
+											relY+=_this.options.stepOnKeyNavigate.xd(1);
+										}
+									break;
+									case ARROWDOWN:
+										if( ax=='both'||ax=='y' ){
+											relY-=_this.options.stepOnKeyNavigate.xd(1);
+										}
+									break;
+									case ARROWRIGHT:
+										if( ax=='both'||ax=='x' ){
+											relX+=_this.options.stepOnKeyNavigate.xd(0);
+										}
+									break;
+									case ARROWLEFT:
+										if( ax=='both'||ax=='x' ){
+											relX-=_this.options.stepOnKeyNavigate.xd(0);
+										}
+									break;
+									default: return true;
+								}
+								setValue(_this,i,relX,relY);
+								event.stopPropagation();
+								event.preventDefault();
+							});
+					}(i);
 				}else{
 					for(var t=0;t<_this.$runners[i][0].ranges.length;t++)
 						_this.$runners[i][0].ranges[t].rect.remove();
@@ -553,8 +596,8 @@
 								getValue(_this,i,x,y);
 							}
 						})
-						.off('click.xdsoft')
-						.on('click.xdsoft', function( e ){
+						.off('mousedown.xdsoft')
+						.on('mousedown.xdsoft', function( e ){
 							_this.sliderActive = i;
 							$(this).find('input').focus();
 							e.stopPropagation();
@@ -592,6 +635,8 @@
 				})
 				.append(_this.$runners);
 			
+			if( _this.options.round && !_this.options.roundMethod(_this.options.stepOnKeyNavigate.xd(0)) )
+				_this.options.stepOnKeyNavigate = 1;
 			
 			if( _this.options.showLegend && ( !_this.legends||_this.options.recalcLegends ) ){
 				if( _this.legends ){
