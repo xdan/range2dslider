@@ -42,7 +42,7 @@
 			recalcLegends:false,
 			
 			tooltip:['top'], // false, 'top','left','right','bottom'
-			alwaysShowTooltip:[true], // false,true - work only with tooltip<>false
+			alwShowTooltip:[true], // false,true - work only with tooltip<>false
 			
 			onlyGridPoint:false,
 			
@@ -70,7 +70,7 @@
 			
 			disabled: false,
 			
-			stepOnKeyNavigate:0.1,
+			stepOnKey:0.1,
 			
 			runnerClassSkin:['skin1','skin1']
 		};
@@ -120,7 +120,18 @@
 	
 
 	
-	var	roundValue = function(_this,_val){
+	var	recalcLabelPosition = function( $label ){
+			switch( true ){
+				case ($label.hasClass('xdsoft_slider_label_top') || $label.hasClass('xdsoft_slider_label_bottom')):
+					$label.css('margin-left','-'+parseInt($label[0].offsetWidth/2)+'px');
+				break;
+				case ($label.hasClass('xdsoft_slider_label_left') || $label.hasClass('xdsoft_slider_label_right')):
+					$label.css('margin-top','-'+parseInt($label[0].offsetHeight/2)+'px');
+				break;
+			}
+		},
+		
+		roundValue = function(_this,_val){
 			if( _this.options.round ){
 				return [_this.options.roundMethod(_val[0]),_this.options.roundMethod(_val[1])];
 			}
@@ -238,8 +249,8 @@
 				var context = _this.$grid.get(0).getContext("2d"),
 					gridSize = 
 					!_this.options.gridStep?[
-						Math.round(_this.limitX/(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0])),
-						Math.round(_this.limitY/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0]))
+						_this.limitX/(_this.options.axis[0][_this.options.axis[0].length-1]-_this.options.axis[0][0]),
+						_this.limitY/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0])
 					]:$.extend(true,[],_this.options.gridStep);
 				
 				context.translate(0.5,0.5);
@@ -343,7 +354,8 @@
 			_this.options.tooltip.xd(i)&&
 				_this.$runners[i][0]&&
 					_this.$runners[i][0].span&&
-						_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]));
+						_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
+							&&recalcLabelPosition(_this.$runners[i][0].span);
 		});
 		
 		var resizeTimer = 0;
@@ -545,22 +557,22 @@
 								switch( event.which ){
 									case ARROWUP:
 										if( ax=='both'||ax=='y' ){
-											relY+=_this.options.stepOnKeyNavigate.xd(1);
+											relY+=_this.options.stepOnKey.xd(1);
 										}
 									break;
 									case ARROWDOWN:
 										if( ax=='both'||ax=='y' ){
-											relY-=_this.options.stepOnKeyNavigate.xd(1);
+											relY-=_this.options.stepOnKey.xd(1);
 										}
 									break;
 									case ARROWRIGHT:
 										if( ax=='both'||ax=='x' ){
-											relX+=_this.options.stepOnKeyNavigate.xd(0);
+											relX+=_this.options.stepOnKey.xd(0);
 										}
 									break;
 									case ARROWLEFT:
 										if( ax=='both'||ax=='x' ){
-											relX-=_this.options.stepOnKeyNavigate.xd(0);
+											relX-=_this.options.stepOnKey.xd(0);
 										}
 									break;
 									default: return true;
@@ -581,7 +593,7 @@
 					
 					spanpos = _this.options.tooltip.xd(i,'top');
 					if( spanpos&&!$runner[0].span ){
-						$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwaysShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printLabel.xd(i).call($runner[0],_this.values[i])+'</span>');
+						$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printLabel.xd(i).call($runner[0],_this.values[i])+'</span>');
 						$runner.append($span);
 						$runner[0].span = $span;
 					}
@@ -635,8 +647,8 @@
 				})
 				.append(_this.$runners);
 			
-			if( _this.options.round && !_this.options.roundMethod(_this.options.stepOnKeyNavigate.xd(0)) )
-				_this.options.stepOnKeyNavigate = 1;
+			if( _this.options.round && !_this.options.roundMethod(_this.options.stepOnKey.xd(0)) )
+				_this.options.stepOnKey = 1;
 			
 			if( _this.options.showLegend && ( !_this.legends||_this.options.recalcLegends ) ){
 				if( _this.legends ){
@@ -749,7 +761,7 @@
 			width:'0px',
 			className:'xdsoft_vertical',
 			showRanges:[[0,1]],
-			alwaysShowTooltip:[false],
+			alwShowTooltip:[false],
 			tooltip:['right'],
 			showLegend:[0,0],
 			allowAxisMove:['y'],

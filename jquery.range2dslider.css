@@ -78,13 +78,15 @@ opacity:0.7;
 }
 
 .xdsoft_range2dslider_grid{
-background: #fff;
+position:absolute !important;
+cursor: inherit;
 }
 
 .xdsoft_projection{
 position:absolute;
 border:1px dotted rgba(127,127,127,0.4);
 border-width:1px 0px 0px 1px;
+z-index:4;
 }
 .xdsoft_projection.axisx{
 	left:0px; right:0px;
@@ -167,7 +169,7 @@ span.xdsoft_slider_label.xdsoft_slider_label_left{
 	right: 100%;
 	top: 50%;
 	margin-top: -10px;
-	margin-right: 5px;
+	margin-right: 10px;
 }
 
 span.xdsoft_slider_label.xdsoft_slider_label_right:after{
@@ -180,8 +182,8 @@ span.xdsoft_slider_label.xdsoft_slider_label_right:after{
 span.xdsoft_slider_label.xdsoft_slider_label_right{
 	left: 100%;
 	top: 50%;
-	margin-top: -10px;
-	margin-left: 5px;
+	margin-top: -4px;
+	margin-left: 8px;	
 }
 
 
@@ -239,15 +241,12 @@ span.xdsoft_slider_label.xdsoft_slider_label_right{
 
 
 .xdsoft_horizontal .xdsoft_slider_label{
-	background: #000;
-	color: #fff;
-	bottom: 22px !important;
-}
-.xdsoft_horizontal .xdsoft_slider_label.xdsoft_slider_label_top:after{
-	border-top-color:#000;
+
 }
 
-
+.xdsoft_horizontal span.xdsoft_slider_label.xdsoft_slider_label_right{
+	/*margin-top: -10px !important;*/
+}
 
 
 
@@ -292,6 +291,7 @@ opacity:0.3;
 .xdsoft_range2dslider_skin1  .xdsoft_projection_value_y{
 position:absolute;
 font-size:0.6em;
+line-height:1.1em;
 }
 .xdsoft_projection_value_x{
 	left:2px;
