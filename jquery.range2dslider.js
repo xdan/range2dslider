@@ -392,6 +392,7 @@
 					createGrid(_this);
 					for(var l=0;l<_this.values.length;l++)
 						setValue(_this,l,_this.values[l][0],_this.values[l][1]);
+					initalization = false;
 				},100);
 			}(initalization);
 		};
