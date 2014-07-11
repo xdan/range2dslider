@@ -211,7 +211,7 @@
 			if( _this.$runners[sliderId][0].ranges.length )
 				updateSliderRanges(_this,_this.$runners[sliderId][0].ranges);
 			
-			if( nochange )
+			if( !nochange )
 				_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
 		},
 		
