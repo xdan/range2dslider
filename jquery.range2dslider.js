@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Range2DSlider plugin v1.0.2
+ * @preserve jQuery Range2DSlider plugin v1.0.3
  * @homepage http://xdsoft.net/jqplugins/range2dslider/
  * (c) 2014, Chupurnov Valeriy.
  */
@@ -314,6 +314,8 @@
 		delete _this.recalcAllposition;
 	};
 	
+	var initalization = false;
+	
 	function init(_this){
 		var $input = $(_this),
 			i;
@@ -331,43 +333,48 @@
 		_this.$sliderBox = $('<div class="xdsoft_range2dslider_box xdsoft_range2dslider_box_'+_this.options.x+' xdsoft_range2dslider_box_'+_this.options.y+'"></div>'),
 		_this.$runners = [];			
 		
-		_this.$range2DSlider.on('xchange.xdsoft',function(){
-			$input
-				.attr('value',_this.options.printValue.call(_this,_this.values))
-				.val(_this.options.printValue.call(_this,_this.values))
-				.trigger('change');
-		});	
-		
 		if( _this.options.posOnBoxClick ){
 			_this.$sliderBox.on('mousedown.xdsoft', function( e ){
 				var x = e.offsetX==undefined?e.layerX:e.offsetX,
 					y = e.offsetY==undefined?e.layerY:e.offsetY;
 				$('html').addClass('xdsoft_noselect');
-				getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
-				if( !_this.options.onlyGridPoint ){
-					setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
-				}
+				
+				_this.values[_this.sliderActive] = XYToValue(_this,x,y,_this.sliderActive);
+				//getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
+				
+				setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
+				
 			});
 		}
 
-		_this.$range2DSlider.on('xchange.xdsoft', function(e,i){
-			_this.options.tooltip.xd(i)&&
-				_this.$runners[i][0]&&
-					_this.$runners[i][0].span&&
-						_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
-							&&recalcLabelPosition(_this.$runners[i][0].span);
-		});
+		_this.$range2DSlider
+			.on('xchange.xdsoft', function(e,i){
+				var value = _this.options.printValue.call(_this,_this.values);
+				if( value!=$input.attr('value') ){
+					_this.options.tooltip.xd(i)&&
+						_this.$runners[i][0]&&
+							_this.$runners[i][0].span&&
+								_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
+									&&recalcLabelPosition(_this.$runners[i][0].span);
+					
+					$input
+						.attr('value',value)
+						.val(value)
+						
+					if( !initalization ){
+						$input
+							.trigger('change');
+					}
+				}
+			});
 		
-		var resizeTimer = 0;
+
 		_this.recalcAllposition = function(){
-			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(function(){
-				_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
-				_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
-				createGrid(_this);
-				for(var l=0;l<_this.values.length;l++)
-					setValue(_this,l,_this.values[l][0],_this.values[l][1]);
-			},100);
+			_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
+			_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
+			createGrid(_this);
+			for(var l=0;l<_this.values.length;l++)
+				setValue(_this,l,_this.values[l][0],_this.values[l][1]);
 		};
 		
 		$(window).on('resize.xdsoft',_this.recalcAllposition);
@@ -477,6 +484,8 @@
 			return this;
 		}else
 		 return this.each(function(){
+			
+			initalization = true;
 			
 			if( _options&&_options.template&&$.fn.range2DSlider.templates[_options.template] )
 				_options = $.extend(true,{},$.fn.range2DSlider.templates[_options.template],_options);
@@ -739,7 +748,7 @@
 
 			_this.recalcAllposition();
 			
-			
+			initalization = false;
 		});
 	};
 	$.fn.range2DSlider.defaultOptions = defaultOptions;
