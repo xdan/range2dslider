@@ -213,6 +213,8 @@
 			
 			if( !nochange )
 				_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
+			
+			_this.$range2DSlider.trigger('updatelabel.xdsoft',[sliderId]);
 		},
 		
 		getValue = function( _this,sliderId, x,y ){
@@ -232,7 +234,7 @@
 			if( _this.options.onlyGridPoint ){
 				setValue( _this,sliderId,_this.values[sliderId][0],_this.values[sliderId][1] )
 			}else{
-				_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
+				_this.$range2DSlider.trigger('updatelabel.xdsoft',[sliderId]);
 			}
 			return _this.values;
 		},
@@ -354,16 +356,17 @@
 			});
 		}
 
+		
 		_this.$range2DSlider
-			.on('xchange.xdsoft', function( e,i ){
-				var value = _this.options.printValue.call(_this,_this.values);
-				
+			.on('updatelabel.xdsoft', function( e,i ){
 				_this.options.tooltip.xd(i)&&
-						_this.$runners[i][0]&&
-							_this.$runners[i][0].span&&
-								_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
+					_this.$runners[i][0]&&
+						_this.$runners[i][0].span&&
+							_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
 									&&recalcLabelPosition(_this.$runners[i][0].span);
-									
+			})
+			.on('xchange.xdsoft', function( e,i ){
+				var value = _this.options.printValue.call(_this,_this.values);			
 				if( value!=$input.attr('value') ){	
 					$input
 						.attr('value',value)
