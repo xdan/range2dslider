@@ -195,7 +195,7 @@
 			]));
 		},
 		
-		setValue = function ( _this,sliderId,relX,relY ){
+		setValue = function ( _this,sliderId,relX,relY,nochange ){
 				
 			var pos = valueToXY(_this,relX,relY);
 			
@@ -211,7 +211,8 @@
 			if( _this.$runners[sliderId][0].ranges.length )
 				updateSliderRanges(_this,_this.$runners[sliderId][0].ranges);
 			
-			_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
+			if( nochange )
+				_this.$range2DSlider.trigger('xchange.xdsoft',[sliderId]);
 		},
 		
 		getValue = function( _this,sliderId, x,y ){
@@ -356,13 +357,14 @@
 		_this.$range2DSlider
 			.on('xchange.xdsoft', function( e,i ){
 				var value = _this.options.printValue.call(_this,_this.values);
-				if( value!=$input.attr('value') ){
-					_this.options.tooltip.xd(i)&&
+				
+				_this.options.tooltip.xd(i)&&
 						_this.$runners[i][0]&&
 							_this.$runners[i][0].span&&
 								_this.$runners[i][0].span.html(_this.options.printLabel.xd(i).call(_this.$runners[i][0],_this.values[i]))
 									&&recalcLabelPosition(_this.$runners[i][0].span);
-					
+									
+				if( value!=$input.attr('value') ){	
 					$input
 						.attr('value',value)
 						.val(value)
@@ -374,13 +376,16 @@
 				}
 			});
 		
-
+		var recalcPositionTimer = 0;
 		_this.recalcAllposition = function(){
-			_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
-			_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
-			createGrid(_this);
-			for(var l=0;l<_this.values.length;l++)
-				setValue(_this,l,_this.values[l][0],_this.values[l][1]);
+			clearTimeout(recalcPositionTimer);
+			recalcPositionTimer = setTimeout(function(){
+				_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
+				_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
+				createGrid(_this);
+				for(var l=0;l<_this.values.length;l++)
+					setValue(_this,l,_this.values[l][0],_this.values[l][1],true);
+			},100);
 		};
 		
 		$(window).on('resize.xdsoft',_this.recalcAllposition);

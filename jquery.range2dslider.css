@@ -109,7 +109,7 @@ z-index:4;
 
 span.xdsoft_slider_label{
   position: absolute;
-  width:50px;
+  min-width:50px;
   color: #fff;
   background: #000;
   text-align: center;
