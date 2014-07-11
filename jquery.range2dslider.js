@@ -253,6 +253,12 @@
 						_this.limitY/(_this.options.axis[1][_this.options.axis[1].length-1]-_this.options.axis[1][0])
 					]:$.extend(true,[],_this.options.gridStep);
 				
+				if( gridSize[0]<2 )
+					gridSize[0] = 2;
+				
+				if( gridSize[1]<2 )
+					gridSize[1] = 2;
+				
 				context.translate(0.5,0.5);
 				
 				
