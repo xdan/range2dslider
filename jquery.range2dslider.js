@@ -234,7 +234,9 @@
 			if( _this.options.onlyGridPoint ){
 				setValue( _this,sliderId,_this.values[sliderId][0],_this.values[sliderId][1] )
 			}else{
-				_this.$range2DSlider.trigger('updatelabel.xdsoft',[sliderId]);
+				_this.$range2DSlider
+					.trigger('xchange.xdsoft',[sliderId])
+					.trigger('updatelabel.xdsoft',[sliderId]);
 			}
 			return _this.values;
 		},
