@@ -384,13 +384,16 @@
 		var recalcPositionTimer = 0;
 		_this.recalcAllposition = function(){
 			clearTimeout(recalcPositionTimer);
-			recalcPositionTimer = setTimeout(function(){
-				_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
-				_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
-				createGrid(_this);
-				for(var l=0;l<_this.values.length;l++)
-					setValue(_this,l,_this.values[l][0],_this.values[l][1]);
-			},100);
+			!function(_initalization){
+				recalcPositionTimer = setTimeout(function(){
+					initalization = _initalization;
+					_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
+					_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
+					createGrid(_this);
+					for(var l=0;l<_this.values.length;l++)
+						setValue(_this,l,_this.values[l][0],_this.values[l][1]);
+				},100);
+			}(initalization);
 		};
 		
 		$(window).on('resize.xdsoft',_this.recalcAllposition);
