@@ -354,7 +354,7 @@
 		}
 
 		_this.$range2DSlider
-			.on('xchange.xdsoft', function(e,i){
+			.on('xchange.xdsoft', function( e,i ){
 				var value = _this.options.printValue.call(_this,_this.values);
 				if( value!=$input.attr('value') ){
 					_this.options.tooltip.xd(i)&&
