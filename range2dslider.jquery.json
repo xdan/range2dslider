@@ -1,6 +1,6 @@
 {
     "name": "range2dslider",
-    "version": "1.0.3",
+    "version": "1.0.4",
 	"title": "jQuery 2D Slider and Range",
     "description": "jQuery plugin select range or single value from period or 2d board",
     "keywords": [
@@ -37,6 +37,7 @@
         }
     ],
     "bugs": "https://github.com/xdan/range2dslider/issues",
+    "demo": "http://xdsoft.net/jqplugins/range2dslider/",
     "homepage": "http://xdsoft.net/jqplugins/range2dslider/",
     "docs": "http://xdsoft.net/jqplugins/range2dslider/",
     "download": "https://github.com/xdan/range2dslider/archive/master.zip",

@@ -1,6 +1,6 @@
 {
 	"name":"range2dslider",
-	"version":"1.0.3",
+	"version":"1.0.4",
 	"main": [
 		"jquery.range2dslider.js",
 		"jquery.range2dslider.css"

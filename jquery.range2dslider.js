@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Range2DSlider plugin v1.0.3
+ * @preserve jQuery Range2DSlider plugin v1.0.4
  * @homepage http://xdsoft.net/jqplugins/range2dslider/
  * (c) 2014, Chupurnov Valeriy.
  */
@@ -27,6 +27,8 @@
 			
 			posOnBoxClick:true,
 			
+			timeoutRecalc:100,
+			
 			grid:true,
 			gridStep:false,
 			gridStyle:{
@@ -51,11 +53,22 @@
 			
 			allowAxisMove:['both'], // 'x','y','both'
 			
-			printLabel:function( value ){
+			printLabel: function( value ){
 				return value[0].toFixed(2)+'-'+value[1].toFixed(2)
 			},
 			
-			printValue:function( value ){
+			parseValue: function( str ){
+				var s = str.split(';'),i,value=[], prs = [];
+				for(i =0;i<s.length;i++){
+					prs = s[i].split('|');
+					prs[0] = parseFloat(prs[0]);
+					prs[1] = parseFloat(prs[1]);
+					value.push(prs);
+				}
+				return value;
+			},
+			
+			printValue: function( value ){
 				var s = [],i;
 				for(i =0;i<value.length;i++){
 					if( $.isArray(value[i]) ){
@@ -77,7 +90,7 @@
 	
 	Boolean.prototype.xd = Function.prototype.xd = Number.prototype.xd = String.prototype.xd = Array.prototype.xd = function( i,defaultValue ){
 		if( !(this instanceof Array) )
-			return this;
+			return this.valueOf();
 		else{
 			if( typeof(this[i])!='undefined' ){
 				return this[i];
@@ -106,20 +119,7 @@
 			slider.projections[1].css(options.x,x-1);
 		}
 	}
-	
-	function parseValue(str){
-		var s = str.split(';'),i,value=[], prs = [];
-		for(i =0;i<s.length;i++){
-			prs = s[i].split('|');
-			prs[0] = parseFloat(prs[0]);
-			prs[1] = parseFloat(prs[1]);
-			value.push(prs);
-		}
-		return value;
-	}
-	
 
-	
 	var	recalcLabelPosition = function( $label ){
 			switch( true ){
 				case ($label.hasClass('xdsoft_slider_label_top') || $label.hasClass('xdsoft_slider_label_bottom')):
@@ -385,7 +385,7 @@
 		_this.recalcAllposition = function(){
 			clearTimeout(recalcPositionTimer);
 			!function(_initalization){
-				recalcPositionTimer = setTimeout(function(){
+				var rc = function(){
 					initalization = _initalization;
 					_this.limitX 		= 	parseInt(_this.$sliderBox[0].clientWidth);
 					_this.limitY	 	=  	parseInt(_this.$sliderBox[0].clientHeight);
@@ -393,7 +393,11 @@
 					for(var l=0;l<_this.values.length;l++)
 						setValue(_this,l,_this.values[l][0],_this.values[l][1]);
 					initalization = false;
-				},100);
+				};
+				if( _this.options.timeoutRecalc )
+					recalcPositionTimer = setTimeout(rc,_this.options.timeoutRecalc);
+				else
+					rc();
 			}(initalization);
 		};
 		
@@ -533,22 +537,24 @@
 				}
 			}
 
+			if( _this.options )
+				_this.options = $.extend(true,{},_this.options,_options);
+			else 
+				_this.options = $.extend(true,{},{},options);
+			
 			if( !_options||!_options.value ){
 				if( $input.attr('value')){
-					_this.values = parseValue($input.attr('value'));
+					_this.values = _this.options.parseValue($input.attr('value'));
 				}
 			}else{
-				$input.attr('value',options.printValue.call(_this,_this.values))
+				$input.attr('value',_this.options.printValue.call(_this,_this.values))
 			}
 			
 			
 			if( !$.isArray(_this.values[0]) )
 				_this.values = [_this.values];
 			
-			if( _this.options )
-				_this.options = $.extend(true,{},_this.options,_options);
-			else 
-				_this.options = $.extend(true,{},{},options);
+			
 			
 			if( !_this.options.axis )
 				_this.options.axis = [];
@@ -652,7 +658,7 @@
 			}
 			_this.$runners.length = _this.values.length;
 			
-			if( $.isArray(_this.options.showRanges)&&_this.options.showRanges.length ){
+			if( $.isArray(_this.options.showRanges)&&_this.options.showRanges.length&&_this.values.length>1 ){
 				var range,$range ;
 				for(i=0;i< _this.options.showRanges.length;i++){
 					rangeBetween = _this.options.showRanges.xd(i);
