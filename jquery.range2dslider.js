@@ -1,5 +1,5 @@
 /**
- * @preserve jQuery Range2DSlider plugin v1.0.4
+ * @preserve jQuery Range2DSlider plugin v1.0.5
  * @homepage http://xdsoft.net/jqplugins/range2dslider/
  * (c) 2014, Chupurnov Valeriy.
  */
@@ -350,7 +350,7 @@
 					y = e.offsetY==undefined?e.layerY:e.offsetY;
 				$('html').addClass('xdsoft_noselect');
 				
-				_this.values[_this.sliderActive] = XYToValue(_this,x,y,_this.sliderActive);
+				_this.values[_this.sliderActive] = XYToValue(_this,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y,_this.sliderActive);
 				//getValue(_this,_this.sliderActive,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y);
 				
 				setValue( _this,_this.sliderActive, _this.values[_this.sliderActive][0],_this.values[_this.sliderActive][1] );
@@ -410,16 +410,11 @@
 			.after(_this.$range2DSlider);
 	}
 	
-	$.fn.xdSoftDraggable = function( _options ){
-		var options = $.extend(true,{},{
-				x:'left',
-				y:'bottom',
-				allowAxisMove:'both', // 'x','y','both'
-				onMove:function(){},
-				disabled: false
-			},_options),
-			
-			drag = false,
+	/**
+	 * XDSoft Draggable Plugin
+	 */
+	!function($){
+		 var drag = false,
 			oldX, 
 			oldY,
 			newX, 
@@ -428,18 +423,46 @@
 			oldLeft,
 			limitX,
 			limitY,
+			defaultOptions = {
+				x:'left',
+				y:'bottom',
+				allowAxisMove:'both', // 'x','y','both'
+				onMove:function(){},
+				disabled: false
+			},
 			
-			xdSoftDraggableMove = function( event ){
+			options = $.extend(true,{},defaultOptions),
+			
+			pointerEventToXY = function( e ) {
+				var out = {x:0, y:0};
+				if( e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel' ) {
+					var touch = e.touches[0] || e.changedTouches[0];
+					out.x = touch.clientX;
+					out.y = touch.clientY;
+				}else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+					out.x = e.clientX;
+					out.y = e.clientY;
+				}
+				return out;
+			},
+			
+			xdSoftDraggableDrag = function( event ){
 				if( drag&&!options.disabled ){
+					event = event || window.event;
+					
+					event.preventDefault();
+					
+					var out = pointerEventToXY( event );
+					
 					if( options.allowAxisMove=='both' || options.allowAxisMove=='x'){
-						newX = oldLeft+(options.x=='right'?-1:1)*(event.clientX-oldX);
+						newX = oldLeft+(options.x=='right'?-1:1)*(out.x-oldX);
 						if( newX < 0 ) 
 							newX = 0;
 						if( newX > limitX ) 
 							newX = limitX;
 					}
 					if( options.allowAxisMove=='both' || options.allowAxisMove=='y'){
-						newY = oldTop+(options.y=='bottom'?-1:1)*(event.clientY-oldY);
+						newY = oldTop+(options.y=='bottom'?-1:1)*(out.y-oldY);
 						if( newY < 0 ) 
 							newY = 0;
 						if( newY > limitY ) 
@@ -456,40 +479,77 @@
 				}
 			},
 			
-			xdSoftDraggableMouseup = function( event ){
-				drag = false;
-				$('html').removeClass('xdsoft_noselect');
+			xdSoftDraggableEnd = function( event ){
+				if( drag ){
+					drag = false;
+					$('html').removeClass('xdsoft_noselect');
+				}
+			},
+			
+			xdSoftDraggableStart = function ( event ){
+				var _this = this;
+				options = _this.options;
+				event = event || window.event;
+				
+				var out = pointerEventToXY( event );
+				
+				
+				draggableElement = _this;
+				oldX 		= 	out.x;
+				oldY 		= 	out.y;
+				newX 		= 	oldLeft 	= 	(!isNaN(parseInt(_this.style[options.x]))&&parseInt(_this.style[options.x]))?parseInt(_this.style[options.x]):0;
+				newY 		= 	oldTop		= 	(!isNaN(parseInt(_this.style[options.y]))&&parseInt(_this.style[options.y]))?parseInt(_this.style[options.y]):0;
+				limitX 		= 	_this.parentNode.clientWidth;
+				limitY	 	=  	_this.parentNode.clientHeight;
+				$('html').addClass('xdsoft_noselect');
+				drag 		= 	true;
+				event.stopPropagation();
+				event.preventDefault();
+			},
+			
+			eventNames = {
+				start:'mousedown',
+				move:'mousemove',
+				end:'mouseup'
+			},
+			
+			setGlobalHandler = false,
+			
+			touch = !!("ontouchstart" in window);
+		
+		if( touch )		
+			eventNames = {
+				start:'touchstart',
+				move:'touchmove',
+				end:'touchend'
 			};
 		
-		$(document.body)
-			.off('mousemove.xdSoftDraggable',xdSoftDraggableMove)
-			.on('mousemove.xdSoftDraggable',xdSoftDraggableMove);
+		
+		
+	
 			
-		$([document.body,window])	
-			.off('mouseup.xdSoftDraggable',xdSoftDraggableMouseup)
-			.on('mouseup.xdSoftDraggable',xdSoftDraggableMouseup);
-			
-		return this.each(function(){
-			var _this = this,
-				$this = $(_this);	
+		$.fn.xdSoftDraggable = function( _options ){
 
-			$this
-				.off('mousedown.xdSoftDraggable')
-				.on('mousedown.xdSoftDraggable',function( event ){
-					draggableElement = _this;
-					drag 		= 	true;
-					oldX 		= 	event.clientX;
-					oldY 		= 	event.clientY;
-					newX 		= 	oldLeft 	= 	(!isNaN(parseInt(_this.style[options.x]))&&parseInt(_this.style[options.x]))?parseInt(_this.style[options.x]):0;
-					newY 		= 	oldTop		= 	(!isNaN(parseInt(_this.style[options.y]))&&parseInt(_this.style[options.y]))?parseInt(_this.style[options.y]):0;
-					limitX 		= 	_this.parentNode.clientWidth;
-					limitY	 	=  	_this.parentNode.clientHeight;
-					$('html').addClass('xdsoft_noselect');
-					event.stopPropagation();
-					event.preventDefault();
-				});
-		});
-	};
+			var opt = $.extend(true,{},defaultOptions,_options);
+			
+			if( !setGlobalHandler ){
+				document.body.addEventListener(eventNames.move, xdSoftDraggableDrag);
+				document.body.addEventListener(eventNames.end, xdSoftDraggableEnd);
+				window.addEventListener(eventNames.end, xdSoftDraggableEnd);
+				setGlobalHandler = true;
+			}
+			
+			return this.each(function(){
+				this.options = opt;
+				if( this.className.search('xdsoft_draggable')==-1 ){
+					this.addEventListener(eventNames.start, xdSoftDraggableStart);
+				}
+			});
+			
+		};
+	
+	}(jQuery);
+	
 	$.fn.range2dslider = $.fn.range2DSlider = function( _options,arg2 ){
 		if( typeof(_options)=='string' ){
 			switch(_options){
@@ -622,34 +682,6 @@
 						_this.$runners[i][0].ranges[t].rect.remove();
 					_this.$runners[i][0].ranges = [];
 				}
-				
-				!function(i,$runner){
-					var $span,spanpos;
-					
-					spanpos = _this.options.tooltip.xd(i,'top');
-					if( spanpos&&!$runner[0].span ){
-						$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printLabel.xd(i).call($runner[0],_this.values[i])+'</span>');
-						$runner.append($span);
-						$runner[0].span = $span;
-					}
-					
-					$runner
-						.xdSoftDraggable({
-							disabled: _this.options.disabled,
-							x:_this.options.x,
-							y:_this.options.y,
-							allowAxisMove:_this.options.allowAxisMove.xd(i,'both'),
-							onMove:function(x,y){
-								getValue(_this,i,x,y);
-							}
-						})
-						.off('mousedown.xdsoft')
-						.on('mousedown.xdsoft', function( e ){
-							_this.sliderActive = i;
-							$(this).find('input').focus();
-							e.stopPropagation();
-						});
-				}(i,_this.$runners[i]);
 			}
 			
 			// for second init remove extra sliders
@@ -681,6 +713,37 @@
 					width:_this.options.width
 				})
 				.append(_this.$runners);
+			
+			for(i=0;i<_this.values.length;i++){
+				!function(i,$runner){
+					var $span,spanpos;
+					
+					spanpos = _this.options.tooltip.xd(i,'top');
+					if( spanpos&&!$runner[0].span ){
+						$span = $('<span class="xdsoft_slider_label  xdsoft_slider_label_'+spanpos+' xdsoft_slider_label_'+(_this.options.alwShowTooltip.xd(i)?'visible':'hidden')+'" >'+_this.options.printLabel.xd(i).call($runner[0],_this.values[i])+'</span>');
+						$runner.append($span);
+						$runner[0].span = $span;
+					}
+					
+					$runner
+						.xdSoftDraggable({
+							disabled: _this.options.disabled,
+							x:_this.options.x,
+							y:_this.options.y,
+							allowAxisMove:_this.options.allowAxisMove.xd(i,'both'),
+							onMove:function(x,y){
+								getValue(_this,i,x,y);
+							}
+						})
+						.off('mousedown.xdsoft touchstart.xdsoft')
+						.on('mousedown.xdsoft touchstart.xdsoft', function( e ){
+							_this.sliderActive = i;
+							$(this).find('input').focus();
+							e.stopPropagation();
+						});
+				}(i,_this.$runners[i]);
+			}
+			
 			
 			if( _this.options.round && !_this.options.roundMethod(_this.options.stepOnKey.xd(0)) )
 				_this.options.stepOnKey = 1;

@@ -40,6 +40,10 @@
 	<h2>Simple 2d slider</h2>
 	<input id="slider">
 	<script>
+	window.onerror = function(msg, url, linenumber) {
+        alert('Error message: '+msg+'\nURL: '+url+'\nLine Number: '+linenumber);
+        return true;
+    }
 	$('#slider').range2DSlider({
 		grid:true,
 		axis:[[1,2,5,7,10],[2,5,10]],
@@ -52,7 +56,9 @@
 		}
 	})
 		.range2DSlider('value',[[0,1],[3,0],[6,6]]);
-	$('#slider').range2DSlider();
+	
+	$('#slider')
+		.range2DSlider();
 	</script>
 	<h2>Horizontal slider</h2>
 	<input id="slider1">
