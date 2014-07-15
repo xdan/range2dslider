@@ -346,8 +346,10 @@
 		
 		if( _this.options.posOnBoxClick ){
 			_this.$sliderBox.on('mousedown.xdsoft', function( e ){
-				var x = e.offsetX==undefined?e.layerX:e.offsetX,
-					y = e.offsetY==undefined?e.layerY:e.offsetY;
+				// fix for ff
+				var x =  (e.offsetX || e.clientX - $(e.target).offset()[_this.options.x]),
+					y =  (e.offsetY || e.clientY - $(e.target).offset()[_this.options.y]);
+				
 				$('html').addClass('xdsoft_noselect');
 				
 				_this.values[_this.sliderActive] = XYToValue(_this,_this.options.x=='left'?x:_this.limitX-x,_this.options.y=='top'?y:_this.limitY-y,_this.sliderActive);
