@@ -1,0 +1,36 @@
+{
+  "name": "range2dslider",
+  "version": "1.0.5",
+  "description": "jQuery plugin select range or single value from period or 2d board. Support touch devices",
+  "main": "jquery.range2dslider.js",
+  "scripts": {
+    "test": "$('input').range2dslider()"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xdan/range2dSlider.git"
+  },
+  "keywords": [
+    "slider",
+    "range",
+    "input",
+    "2d",
+    "select",
+    "value",
+    "between",
+    "range2dslider",
+    "horizontal",
+    "ui",
+    "scroller",
+    "picker",
+    "vertical",
+    "jquery",
+    "touch"
+  ],
+  "author": "Chupurnov <chupurnov@gmail.com> (http://xdsoft.net/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xdan/range2dSlider/issues"
+  },
+  "homepage": "http://xdsoft.net/jqplugins/range2dSlider/"
+}
